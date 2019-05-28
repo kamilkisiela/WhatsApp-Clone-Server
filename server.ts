@@ -12,5 +12,13 @@ export const rootModule = new GraphQLModule({
 
 export const server = new ApolloServer({
   schema: rootModule.schema,
-  context: rootModule.context
+  context: rootModule.context,
+  subscriptions: rootModule.subscriptions,
+  engine: {
+    apiKey: 'service:whatsapp-cache-messages:EMKyD28ydXotLr8DnxkDFA'
+  },
+  formatError(error) {
+    console.log(error.originalError);
+    return error;
+  }
 })

@@ -1,0 +1,78 @@
+config:
+  target: 'http://localhost:4000'
+  phases:
+    - duration: 60
+      arrivalRate: 20
+  defaults:
+    cookie:
+      authToken: 'eyJhbGciOiJIUzI1NiJ9.ZXRoYW4.6rjCecbaSLHelefKeItd-AWCml5EHb8sI2Az9CKGinY'
+scenarios:
+  - name: 'Get current user'
+    flow:
+      - post:
+          url: '/graphql'
+          json:
+            operationName: Me
+            query: '
+              query Me {
+                me {
+                  ...User
+                  __typename
+                }
+              }
+
+              fragment User on User {
+                id
+                name
+                picture
+                __typename
+              }
+            '
+  - name: 'Get a chat'
+    flow:
+      - post:
+          url: '/graphql'
+          json:
+            operationName: GetChat
+            variables:
+              chatId: 1
+            query: '
+              query GetChat($chatId: ID!) {
+                chat(chatId: $chatId) {
+                  ...FullChat
+                  __typename
+                }
+              }
+
+              fragment FullChat on Chat {
+                ...Chat
+                messages {
+                  ...Message
+                  __typename
+                }
+                __typename
+              }
+
+              fragment Chat on Chat {
+                id
+                name
+                picture
+                lastMessage {
+                  ...Message
+                  __typename
+                }
+                __typename
+              }
+
+              fragment Message on Message {
+                id
+                createdAt
+                content
+                isMine
+                chat {
+                  id
+                  __typename
+                }
+                __typename
+              }
+            '

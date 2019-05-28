@@ -1,38 +1,38 @@
-import { Pool } from "pg";
-import sql from 'sql-template-strings'
-import { resetDb as envResetDb } from './env'
+import { Pool } from 'pg';
+import sql from 'sql-template-strings';
+import addMinutes from 'date-fns/add_minutes'
+import { resetDb as envResetDb } from './env';
 
 export type User = {
-  id: string
-  name: string
-  username: string
-  password: string
-  picture: string
-}
+  id: string;
+  name: string;
+  username: string;
+  password: string;
+  picture: string;
+};
 
 export type Message = {
-  id: string
-  content: string
-  created_at: Date
-  chat_id: string
-  sender_user_id: string
-}
+  id: string;
+  content: string;
+  created_at: Date;
+  chat_id: string;
+  sender_user_id: string;
+};
 
 export type Chat = {
-  id: string
-}
+  id: string;
+};
 
 export const pool = new Pool({
   host: 'localhost',
   port: 5432,
   user: 'testuser',
   password: 'testpassword',
-  database: 'whatsapp'
-})
+  database: 'whatsapp',
+});
 
 export const resetDb = async () => {
-
-  await pool.query(sql`DELETE FROM users`)
+  await pool.query(sql`DELETE FROM users`);
 
   const sampleUsers = [
     {
@@ -70,18 +70,22 @@ export const resetDb = async () => {
       password: '$2a$08$6.mbXqsDX82ZZ7q5d8Osb..JrGSsNp4R3IKj7mxgF6YGT0OmMw242', // 555
       picture: 'https://randomuser.me/api/portraits/thumb/women/2.jpg',
     },
-  ]
+  ];
 
   for (const sampleUser of sampleUsers) {
     await pool.query(sql`
       INSERT INTO users(id, name, username, password, picture)
-      VALUES(${sampleUser.id}, ${sampleUser.name}, ${sampleUser.username}, ${sampleUser.password}, ${sampleUser.picture})
-    `)
+      VALUES(${sampleUser.id}, ${sampleUser.name}, ${sampleUser.username}, ${
+      sampleUser.password
+    }, ${sampleUser.picture})
+    `);
   }
 
-  await pool.query(sql`SELECT setval('users_id_seq', (SELECT max(id) FROM users))`)
+  await pool.query(
+    sql`SELECT setval('users_id_seq', (SELECT max(id) FROM users))`,
+  );
 
-  await pool.query(sql`DELETE FROM chats`)
+  await pool.query(sql`DELETE FROM chats`);
 
   const sampleChats = [
     {
@@ -96,18 +100,20 @@ export const resetDb = async () => {
     {
       id: '4',
     },
-  ]
+  ];
 
   for (const sampleChat of sampleChats) {
     await pool.query(sql`
       INSERT INTO chats(id)
       VALUES(${sampleChat.id})
-    `)
+    `);
   }
 
-  await pool.query(sql`SELECT setval('chats_id_seq', (SELECT max(id) FROM chats))`)
+  await pool.query(
+    sql`SELECT setval('chats_id_seq', (SELECT max(id) FROM chats))`,
+  );
 
-  await pool.query(sql`DELETE FROM chats_users`)
+  await pool.query(sql`DELETE FROM chats_users`);
 
   const sampleChatsUsers = [
     {
@@ -142,21 +148,21 @@ export const resetDb = async () => {
       chat_id: '4',
       user_id: '5',
     },
-  ]
+  ];
 
   for (const sampleChatUser of sampleChatsUsers) {
     await pool.query(sql`
       INSERT INTO chats_users(chat_id, user_id)
       VALUES(${sampleChatUser.chat_id}, ${sampleChatUser.user_id})
-    `)
+    `);
   }
 
-  await pool.query(sql`DELETE FROM messages`)
+  await pool.query(sql`DELETE FROM messages`);
 
   const sampleMessages = [
     {
       id: '1',
-      content: "You on your way?",
+      content: 'You on your way?',
       created_at: new Date(new Date('1-1-2019').getTime() - 60 * 1000 * 1000),
       chat_id: '1',
       sender_user_id: '1',
@@ -164,37 +170,67 @@ export const resetDb = async () => {
     {
       id: '2',
       content: "Hey, it's me",
-      created_at: new Date(new Date('1-1-2019').getTime() - 2 * 60 * 1000 * 1000),
+      created_at: new Date(
+        new Date('1-1-2019').getTime() - 2 * 60 * 1000 * 1000,
+      ),
       chat_id: '2',
       sender_user_id: '1',
     },
     {
       id: '3',
-      content: "I should buy a boat",
-      created_at: new Date(new Date('1-1-2019').getTime() - 24 * 60 * 1000 * 1000),
+      content: 'I should buy a boat',
+      created_at: new Date(
+        new Date('1-1-2019').getTime() - 24 * 60 * 1000 * 1000,
+      ),
       chat_id: '3',
       sender_user_id: '1',
     },
     {
       id: '4',
-      content: "This is wicked good ice cream.",
-      created_at: new Date(new Date('1-1-2019').getTime() - 14 * 24 * 60 * 1000 * 1000),
+      content: 'This is wicked good ice cream.',
+      created_at: new Date(
+        new Date('1-1-2019').getTime() - 14 * 24 * 60 * 1000 * 1000,
+      ),
       chat_id: '4',
       sender_user_id: '1',
     },
-  ]
+  ];
+
+  const baseDate = sampleMessages[0].created_at;
+  console.log(baseDate);
+
+  new Array(62)
+    .fill(0)
+    .forEach((_, i) => {
+      console.log(`${i + 2}`, addMinutes(baseDate, i+1));
+      sampleMessages.push({
+        id: `${i + 5}`,
+        content: `${i}`,
+        created_at: addMinutes(baseDate, i+1),
+        chat_id: '1',
+        sender_user_id: '1',
+      });
+    });
 
   for (const sampleMessage of sampleMessages) {
-    await pool.query(sql`
+    console.log('insert', sampleMessage.id, ' - ' ,sampleMessage.content);
+    try {
+      await pool.query(sql`
       INSERT INTO messages(id, content, created_at, chat_id, sender_user_id)
-      VALUES(${sampleMessage.id}, ${sampleMessage.content}, ${sampleMessage.created_at}, ${sampleMessage.chat_id}, ${sampleMessage.sender_user_id})
-    `)
+      VALUES(${sampleMessage.id}, ${sampleMessage.content}, ${
+      sampleMessage.created_at
+    }, ${sampleMessage.chat_id}, ${sampleMessage.sender_user_id})
+    `);
+    } catch (e) {
+      throw e;
+    }
   }
 
-  await pool.query(sql`SELECT setval('messages_id_seq', (SELECT max(id) FROM messages))`)
-
-}
+  await pool.query(
+    sql`SELECT setval('messages_id_seq', (SELECT max(id) FROM messages))`,
+  );
+};
 
 if (envResetDb) {
-  resetDb()
+  resetDb();
 }

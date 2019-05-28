@@ -21,12 +21,18 @@ const typeDefs = gql`
     isMine: Boolean!
   }
 
+  type MessagesResult {
+    cursor: Float
+    hasMore: Boolean!
+    messages: [Message!]!
+  }
+
   type Chat {
     id: ID!
     name: String
     picture: String
     lastMessage: Message
-    messages: [Message!]!
+    messages(limit: Int!, after: Float): MessagesResult!
     participants: [User!]!
   }
 
@@ -99,13 +105,15 @@ const resolvers: Resolvers = {
         userId: currentUser.id,
       });
 
-      return participant && participant.picture
-        ? participant.picture
-        : injector.get(UnsplashApi).getRandomPhoto();
+      return participant.picture || injector.get(UnsplashApi).getRandomPhoto();
     },
 
     async messages(chat, args, { injector }) {
-      return injector.get(Chats).findMessagesByChat(chat.id);
+      return injector.get(Chats).findMessagesByChat({
+        chatId: chat.id,
+        limit: args.limit,
+        after: args.after,
+      });
     },
 
     async lastMessage(chat, args, { injector }) {
@@ -120,7 +128,7 @@ const resolvers: Resolvers = {
   Query: {
     async chats(root, args, { injector }) {
       const currentUser = await injector.get(Auth).currentUser();
-      
+
       if (!currentUser) return [];
 
       return injector.get(Chats).findChatsByUser(currentUser.id);
@@ -150,7 +158,7 @@ const resolvers: Resolvers = {
 
     async addChat(root, { recipientId }, { injector }) {
       const currentUser = await injector.get(Auth).currentUser();
-      
+
       if (!currentUser) return null;
 
       return injector
@@ -177,14 +185,26 @@ const resolvers: Resolvers = {
           args,
           { injector },
         ) => {
-          const currentUser = await injector.get(Auth).currentUser();
+          try {
+            console.log('[received] message added');
+            const currentUser = await injector.get(Auth).currentUser();
 
-          if (!currentUser) return false;
+            console.log({ currentUser });
 
-          return injector.get(Chats).isParticipant({
-            chatId: messageAdded.chat_id,
-            userId: currentUser.id,
-          });
+            if (!currentUser) return false;
+
+            const isParticipant = await injector.get(Chats).isParticipant({
+              chatId: messageAdded.chat_id,
+              userId: currentUser.id,
+            });
+
+            console.log({ isParticipant });
+
+            return isParticipant;
+          } catch (e) {
+            console.error(e);
+            return false;
+          }
         },
       ),
     },
@@ -193,11 +213,7 @@ const resolvers: Resolvers = {
       subscribe: withFilter(
         (root, args, { injector }) =>
           injector.get(PubSub).asyncIterator('chatAdded'),
-        async (
-          { chatAdded }: { chatAdded: Chat },
-          args,
-          { injector },
-        ) => {
+        async ({ chatAdded }: { chatAdded: Chat }, args, { injector }) => {
           const currentUser = await injector.get(Auth).currentUser();
 
           if (!currentUser) return false;
@@ -214,13 +230,9 @@ const resolvers: Resolvers = {
       subscribe: withFilter(
         (root, args, { injector }) =>
           injector.get(PubSub).asyncIterator('chatRemoved'),
-        async (
-          { targetChat }: { targetChat: Chat },
-          args,
-          { injector },
-        ) => {
+        async ({ targetChat }: { targetChat: Chat }, args, { injector }) => {
           const currentUser = await injector.get(Auth).currentUser();
-          
+
           if (!currentUser) return false;
 
           return injector.get(Chats).isParticipant({
