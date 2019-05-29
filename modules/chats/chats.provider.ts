@@ -69,7 +69,6 @@ export class Chats {
     query.append(` WHERE chat_id = ${chatId}`);
 
     if (after) {
-      console.log(cursorToDate(after))
       query.append(` AND created_at < ${cursorToDate(after)}`);
     }
 
@@ -160,7 +159,6 @@ export class Chats {
 
     const messageAdded = rows[0];
 
-    console.log('publish messageAdded', { messageAdded });
     this.pubsub.publish('messageAdded', {
       messageAdded,
     });

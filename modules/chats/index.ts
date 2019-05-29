@@ -185,26 +185,16 @@ const resolvers: Resolvers = {
           args,
           { injector },
         ) => {
-          try {
-            console.log('[received] message added');
-            const currentUser = await injector.get(Auth).currentUser();
+          const currentUser = await injector.get(Auth).currentUser();
 
-            console.log({ currentUser });
+          if (!currentUser) return false;
 
-            if (!currentUser) return false;
+          const isParticipant = await injector.get(Chats).isParticipant({
+            chatId: messageAdded.chat_id,
+            userId: currentUser.id,
+          });
 
-            const isParticipant = await injector.get(Chats).isParticipant({
-              chatId: messageAdded.chat_id,
-              userId: currentUser.id,
-            });
-
-            console.log({ isParticipant });
-
-            return isParticipant;
-          } catch (e) {
-            console.error(e);
-            return false;
-          }
+          return isParticipant;
         },
       ),
     },

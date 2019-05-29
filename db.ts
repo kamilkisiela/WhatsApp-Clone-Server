@@ -1,7 +1,8 @@
 import { Pool } from 'pg';
+import faker from 'faker';
 import sql from 'sql-template-strings';
-import addMinutes from 'date-fns/add_minutes'
-import { resetDb as envResetDb } from './env';
+import addMinutes from 'date-fns/add_minutes';
+import { resetDb as envResetDb, fakedDb } from './env';
 
 export type User = {
   id: string;
@@ -196,30 +197,17 @@ export const resetDb = async () => {
     },
   ];
 
-  const baseDate = sampleMessages[0].created_at;
-  console.log(baseDate);
-
-  new Array(62)
-    .fill(0)
-    .forEach((_, i) => {
-      console.log(`${i + 2}`, addMinutes(baseDate, i+1));
-      sampleMessages.push({
-        id: `${i + 5}`,
-        content: `${i}`,
-        created_at: addMinutes(baseDate, i+1),
-        chat_id: '1',
-        sender_user_id: '1',
-      });
-    });
+  if (fakedDb) {
+    addFakedMessages(sampleMessages, 42);
+  }
 
   for (const sampleMessage of sampleMessages) {
-    console.log('insert', sampleMessage.id, ' - ' ,sampleMessage.content);
     try {
       await pool.query(sql`
       INSERT INTO messages(id, content, created_at, chat_id, sender_user_id)
       VALUES(${sampleMessage.id}, ${sampleMessage.content}, ${
-      sampleMessage.created_at
-    }, ${sampleMessage.chat_id}, ${sampleMessage.sender_user_id})
+        sampleMessage.created_at
+      }, ${sampleMessage.chat_id}, ${sampleMessage.sender_user_id})
     `);
     } catch (e) {
       throw e;
@@ -230,6 +218,21 @@ export const resetDb = async () => {
     sql`SELECT setval('messages_id_seq', (SELECT max(id) FROM messages))`,
   );
 };
+
+function addFakedMessages(messages: Message[], count: number) {
+  const message = messages[0];
+  const date = message.created_at;
+  const id = messages.length + 1;
+
+  new Array(count).fill(0).forEach((_, i) => {
+    messages.push({
+      ...message,
+      id: `${id + i}`,
+      content: faker.lorem.sentence(4),
+      created_at: addMinutes(date, i + 1),
+    });
+  });
+}
 
 if (envResetDb) {
   resetDb();

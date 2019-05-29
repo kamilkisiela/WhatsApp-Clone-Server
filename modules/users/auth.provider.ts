@@ -17,8 +17,7 @@ export class Auth {
   private _currentUser: User;
 
   private get req() {
-    console.log(this.module.session.connection);
-    return this.module.session.req;
+    return this.module.session.req || this.module.session.request;
   }
 
   private get res(): Response {
