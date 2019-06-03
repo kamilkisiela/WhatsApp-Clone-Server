@@ -1,5 +1,5 @@
 import { Injectable, ProviderScope } from '@graphql-modules/di';
-import { OnResponse } from '@graphql-modules/core';
+import { OnResponse, ModuleSessionInfo } from '@graphql-modules/core';
 import { Pool, PoolClient, QueryResult, QueryConfig } from 'pg';
 import { SQLStatement } from 'sql-template-strings';
 import Dataloader from 'dataloader';

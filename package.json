@@ -8,6 +8,9 @@
   "private": true,
   "scripts": {
     "start": "ts-node index.ts",
+    "debug": "node --inspect dist/index.js",
+    "build": "tsc",
+    "prod": "node dist/index.js",
     "test": "jest --runInBand",
     "codegen": "gql-gen"
   },
@@ -34,15 +37,18 @@
     "typescript": "3.3.3333"
   },
   "dependencies": {
-    "@graphql-modules/core": "0.7.1",
-    "@graphql-modules/di": "0.7.1",
+    "@graphql-modules/core": "0.7.5",
+    "@graphql-modules/di": "0.7.5",
     "@safe-api/middleware": "^0.0.2",
+    "@types/cookie": "0.3.3",
     "apollo-datasource-rest": "^0.4.0",
     "apollo-server-express": "2.4.8",
     "apollo-server-testing": "2.4.8",
+    "artillery": "1.6.0-28",
     "axios": "0.18.0",
     "bcrypt": "3.0.5",
     "body-parser": "1.18.3",
+    "cookie": "0.4.0",
     "cookie-parser": "1.4.4",
     "cors": "2.8.5",
     "dataloader": "1.4.0",
