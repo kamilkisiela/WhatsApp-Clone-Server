@@ -3,10 +3,7 @@
     "outDir": "dist",
     "target": "es2020",
     "module": "commonjs",
-    "skipLibCheck": true,
     "strict": true,
-    "strictFunctionTypes": false,
-    "strictPropertyInitialization": false,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true

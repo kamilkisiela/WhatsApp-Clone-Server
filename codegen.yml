@@ -11,9 +11,9 @@ generates:
       mappers:
         # import { Message } from '../db'
         # The root types of Message resolvers
-        User: ../db#User
-        Message: ../db#Message
-        Chat: ../db#Chat
+        User: ../db#User as UserDb
+        Message: ../db#Message as MessageDb
+        Chat: ../db#Chat as ChatDb
       scalars:
         # e.g. Message.createdAt will be of type Date
         Date: Date

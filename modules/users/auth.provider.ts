@@ -12,7 +12,7 @@ import { REQUEST, RESPONSE } from '../../app/session';
   scope: Scope.Operation,
 })
 export class Auth {
-  private _currentUser: User;
+  private _currentUser!: User;
 
   constructor(
     private users: Users,

@@ -7,7 +7,7 @@ import Dataloader from 'dataloader';
   scope: Scope.Operation,
 })
 export class Database implements OnDestroy {
-  private instance: PoolClient;
+  private instance!: PoolClient;
   private loader: Dataloader<string | SQLStatement, QueryResult>;
 
   constructor(private pool: Pool) {
