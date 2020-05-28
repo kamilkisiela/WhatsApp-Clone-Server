@@ -1,14 +1,12 @@
-import { GraphQLModule } from '@graphql-modules/core';
+import { createModule } from 'graphql-modules';
 import { gql, withFilter } from 'apollo-server-express';
-import commonModule from '../common';
-import usersModule from '../users';
 import { Message, Chat } from '../../db';
 import { Resolvers } from '../../types/graphql';
 import { UnsplashApi } from './unsplash.api';
 import { Users } from './../users/users.provider';
 import { Auth } from './../users/auth.provider';
 import { Chats } from './chats.provider';
-import { PubSub } from '../common/pubsub.provider';
+import { PubSub } from '../../app/pubsub.provider';
 
 const typeDefs = gql`
   type Message {
@@ -235,10 +233,10 @@ const resolvers: Resolvers = {
   },
 };
 
-export default new GraphQLModule({
-  name: 'chats',
+export default createModule({
+  id: 'chats',
   typeDefs,
   resolvers,
-  imports: () => [commonModule, usersModule],
-  providers: () => [UnsplashApi, Chats],
+  providers: [UnsplashApi, Chats, Users, Auth],
+  dirname: __dirname,
 });

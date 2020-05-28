@@ -1,28 +1,24 @@
-import { Injectable, Inject, ProviderScope } from '@graphql-modules/di';
-import { ModuleSessionInfo } from '@graphql-modules/core';
-import { Response } from 'express';
+import { Injectable, Inject, Scope } from 'graphql-modules';
+import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { secret, expiration } from '../../env';
 import { validateLength, validatePassword } from '../../validators';
 import { Users } from './users.provider';
 import { User } from '../../db';
+import { REQUEST, RESPONSE } from '../../app/session';
 
 @Injectable({
-  scope: ProviderScope.Session,
+  scope: Scope.Operation,
 })
 export class Auth {
-  @Inject() private users: Users;
-  @Inject() private module: ModuleSessionInfo;
   private _currentUser: User;
 
-  private get req() {
-    return this.module.session.req || this.module.session.request;
-  }
-
-  private get res(): Response {
-    return this.module.session.res;
-  }
+  constructor(
+    private users: Users,
+    @Inject(REQUEST) private request: Request,
+    @Inject(RESPONSE) private response: Response
+  ) {}
 
   async signIn({ username, password }: { username: string; password: string }) {
     const user = await this.users.findByUsername(username);
@@ -39,7 +35,7 @@ export class Auth {
 
     const authToken = jwt.sign(username, secret);
 
-    this.res.cookie('authToken', authToken, { maxAge: expiration });
+    this.response.cookie('authToken', authToken, { maxAge: expiration });
 
     return user;
   }
@@ -81,8 +77,11 @@ export class Auth {
       return this._currentUser;
     }
 
-    if (this.req.cookies.authToken) {
-      const username = jwt.verify(this.req.cookies.authToken, secret) as string;
+    if (this.request.cookies.authToken) {
+      const username = jwt.verify(
+        this.request.cookies.authToken,
+        secret
+      ) as string;
 
       if (username) {
         this._currentUser = await this.users.findByUsername(username);

@@ -1,4 +1,4 @@
-import { Injectable, ProviderScope } from '@graphql-modules/di';
+import { Injectable, Scope } from 'graphql-modules';
 import { resolve } from 'path';
 import axios from 'axios';
 import { trackProvider } from '@safe-api/middleware';
@@ -9,9 +9,7 @@ interface RandomPhotoInput {
   orientation: 'landscape' | 'portrait' | 'squarish';
 }
 
-@Injectable({
-  scope: ProviderScope.Application,
-})
+@Injectable()
 export class UnsplashApi {
   baseURL = 'https://api.unsplash.com/';
 

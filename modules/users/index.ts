@@ -1,6 +1,5 @@
-import { GraphQLModule } from '@graphql-modules/core';
+import { createModule } from 'graphql-modules';
 import { gql } from 'apollo-server-express';
-import commonModule from '../common';
 import { Resolvers } from '../../types/graphql';
 import { Users } from './users.provider';
 import { Auth } from './auth.provider';
@@ -58,10 +57,10 @@ const resolvers: Resolvers = {
   },
 };
 
-export default new GraphQLModule({
-  name: 'users',
+export default createModule({
+  id: 'users',
   typeDefs,
   resolvers,
-  imports: () => [commonModule],
-  providers: () => [Users, Auth],
+  providers: [Users, Auth],
+  dirname: __dirname,
 });

@@ -1,10 +1,10 @@
-import { Injectable, Inject, ProviderScope } from '@graphql-modules/di';
+import { Injectable, Scope } from 'graphql-modules';
 import { QueryResult } from 'pg';
 import sql from 'sql-template-strings';
 import DataLoader from 'dataloader';
 import format from 'date-fns/format';
-import { Database } from '../common/database.provider';
-import { PubSub } from '../common/pubsub.provider';
+import { Database } from '../../app/database.provider';
+import { PubSub } from '../../app/pubsub.provider';
 import { Chat } from '../../db';
 
 type ChatsByUser = { userId: string };
@@ -21,11 +21,10 @@ function isChatByUser(query: any): query is ChatByUser {
 }
 
 @Injectable({
-  scope: ProviderScope.Session,
+  scope: Scope.Operation,
 })
 export class Chats {
-  @Inject() private db: Database;
-  @Inject() private pubsub: PubSub;
+  constructor(private db: Database, private pubsub: PubSub) {}
 
   private chatsCache = new Map<string, Chat>();
   private loaders = {

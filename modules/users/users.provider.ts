@@ -1,16 +1,16 @@
-import { Injectable, Inject, ProviderScope } from '@graphql-modules/di';
+import { Injectable, Scope } from 'graphql-modules';
 import sql from 'sql-template-strings';
 import bcrypt from 'bcrypt';
-import { Database } from '../common/database.provider';
+import { Database } from '../../app/database.provider';
 
 const DEFAULT_PROFILE_PIC =
   'https://raw.githubusercontent.com/Urigo/WhatsApp-Clone-Client-React/legacy/public/assets/default-profile-pic.jpg';
 
 @Injectable({
-  scope: ProviderScope.Session,
+  scope: Scope.Operation,
 })
 export class Users {
-  @Inject() private db: Database;
+  constructor(private db: Database) {}
 
   async findById(userId: string) {
     const { rows } = await this.db.query(

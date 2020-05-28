@@ -1,13 +1,12 @@
-import { Injectable, ProviderScope } from '@graphql-modules/di';
-import { OnResponse } from '@graphql-modules/core';
+import { Injectable, Scope, OnDestroy } from 'graphql-modules';
 import { Pool, PoolClient, QueryResult } from 'pg';
 import { SQLStatement } from 'sql-template-strings';
 import Dataloader from 'dataloader';
 
 @Injectable({
-  scope: ProviderScope.Session,
+  scope: Scope.Operation,
 })
-export class Database implements OnResponse {
+export class Database implements OnDestroy {
   private instance: PoolClient;
   private loader: Dataloader<string | SQLStatement, QueryResult>;
 
@@ -37,17 +36,17 @@ export class Database implements OnResponse {
     );
   }
 
-  async onRequest() {
-    this.instance = await this.pool.connect();
-  }
-
-  onResponse() {
+  onDestroy() {
     if (this.instance) {
       this.instance.release();
     }
   }
 
-  private getClient() {
+  private async getClient() {
+    if (!this.instance) {
+      this.instance = await this.pool.connect();
+    }
+
     return this.instance;
   }
 

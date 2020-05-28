@@ -1,17 +1,24 @@
 import http from 'http';
-import { app } from './app';
 import { origin, port } from './env';
-import { server } from './server';
+import { useGraphQL } from './graphql';
 
-server.applyMiddleware({
-  app,
-  path: '/graphql',
-  cors: { credentials: true, origin },
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import express from 'express';
+
+export const app = express();
+const server = http.createServer(app);
+
+app.use(cors({ credentials: true, origin }));
+app.use(express.json());
+app.use(cookieParser());
+
+app.get('/_ping', (req, res) => {
+  res.send('pong');
 });
 
-const httpServer = http.createServer(app);
-server.installSubscriptionHandlers(httpServer);
+useGraphQL({ app, server });
 
-httpServer.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });
